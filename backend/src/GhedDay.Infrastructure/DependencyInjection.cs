@@ -1,6 +1,9 @@
+using GhedDay.Application.Bookings;
 using GhedDay.Application.Common;
 using GhedDay.Application.Services;
 using GhedDay.Infrastructure.AI;
+using GhedDay.Infrastructure.AI.Models;
+using GhedDay.Infrastructure.AI.Tools;
 using GhedDay.Infrastructure.Configuration;
 using GhedDay.Infrastructure.Data;
 using GhedDay.Infrastructure.Data.QueryFilters;
@@ -28,6 +31,7 @@ public static class DependencyInjection
         services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlConnectionFactory(connectionString));
         services.AddScoped<IQueryFilterDisabler, QueryFilterDisabler>();
         services.AddScoped<IAvailabilityService, AvailabilityService>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
 
         services.Configure<AnthropicOptions>(configuration.GetSection(AnthropicOptions.SectionName));
         services.Configure<TwilioOptions>(configuration.GetSection(TwilioOptions.SectionName));
@@ -37,9 +41,17 @@ public static class DependencyInjection
         services.AddScoped<StripeService>();
         services.AddScoped<StripeConnectService>();
 
-        services.AddHttpClient<ClaudeHttpClient>();
+        services.AddSingleton(TimeProvider.System);
+        services.AddHttpClient<IClaudeClient, ClaudeHttpClient>();
+        services.AddScoped<ClaudeRequestBuilder>();
+        services.AddScoped<IClaudeTool, GetOfferingsTool>();
+        services.AddScoped<IClaudeTool, CheckAvailabilityTool>();
+        services.AddScoped<IClaudeTool, CreateBookingHoldTool>();
+        services.AddScoped<IClaudeToolHandler, ClaudeToolHandler>();
+        services.AddScoped<IConversationContextStore, ConversationContextStore>();
         services.AddScoped<IConversationOrchestrator, ClaudeConversationOrchestrator>();
 
+        services.AddScoped<ProcessedEventCleanupJob>();
         services.AddScoped<HoldExpiryJob>();
         services.AddScoped<ReminderJob>();
         services.AddScoped<WaitlistOfferTimeoutJob>();

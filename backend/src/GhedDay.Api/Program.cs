@@ -6,6 +6,7 @@ using GhedDay.Application.Common;
 using GhedDay.Application.Services;
 using GhedDay.Infrastructure;
 using GhedDay.Infrastructure.Data;
+using GhedDay.Infrastructure.Jobs;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -87,6 +88,10 @@ if (!string.IsNullOrWhiteSpace(connectionString))
     builder.Services.AddHangfireServer();
 }
 
+// ---------- Health checks ----------
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<GhedDayDbContext>("database");
+
 // ---------- Controllers + Swagger ----------
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -110,11 +115,13 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<BookingHub>("/hubs/booking");
-app.MapGet("/health", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
+app.MapHealthChecks("/health").AllowAnonymous();
 
 if (!string.IsNullOrWhiteSpace(connectionString))
 {
     app.UseHangfireDashboard("/hangfire");
+    RecurringJob.AddOrUpdate<ProcessedEventCleanupJob>(
+        "processed-events-cleanup", job => job.RunAsync(CancellationToken.None), Cron.Daily);
 }
 
 // ---------- Dev: migrate + seed ----------

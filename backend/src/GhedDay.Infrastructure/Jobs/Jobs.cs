@@ -1,4 +1,29 @@
+using Dapper;
+using GhedDay.Infrastructure.Data;
+
 namespace GhedDay.Infrastructure.Jobs;
+
+/// <summary>
+/// Prunes processed_events older than the retention window so the idempotency table does not
+/// grow unbounded. The dedupe guarantee only needs to cover the providers' retry windows.
+/// </summary>
+public sealed class ProcessedEventCleanupJob
+{
+    private static readonly TimeSpan Retention = TimeSpan.FromDays(30);
+
+    private readonly IDbConnectionFactory _connectionFactory;
+
+    public ProcessedEventCleanupJob(IDbConnectionFactory connectionFactory) =>
+        _connectionFactory = connectionFactory;
+
+    public async Task RunAsync(CancellationToken ct = default)
+    {
+        await using var conn = await _connectionFactory.OpenAsync(ct);
+        await conn.ExecuteAsync(new CommandDefinition(
+            "DELETE FROM processed_events WHERE \"ProcessedAt\" < @cutoff;",
+            new { cutoff = DateTimeOffset.UtcNow - Retention }, cancellationToken: ct));
+    }
+}
 
 /// <summary>Sweeps pending_deposit bookings past hold_expires_at → cancel → waitlist check. (Phase 4.)</summary>
 public sealed class HoldExpiryJob
