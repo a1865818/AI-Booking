@@ -151,6 +151,18 @@ public sealed class ReminderConfiguration : IEntityTypeConfiguration<Reminder>
     }
 }
 
+public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
+{
+    public void Configure(EntityTypeBuilder<RefreshToken> b)
+    {
+        b.ToTable("refresh_tokens");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.TokenHash).IsRequired();
+        b.HasIndex(x => x.TokenHash).IsUnique();
+        b.HasIndex(x => x.UserId);
+    }
+}
+
 public sealed class ProcessedEventConfiguration : IEntityTypeConfiguration<ProcessedEvent>
 {
     public void Configure(EntityTypeBuilder<ProcessedEvent> b)

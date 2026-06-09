@@ -35,6 +35,7 @@ public class GhedDayDbContext : DbContext
 
     public DbSet<Business> Businesses => Set<Business>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Resource> Resources => Set<Resource>();
     public DbSet<Offering> Offerings => Set<Offering>();
     public DbSet<BusinessHours> BusinessHours => Set<BusinessHours>();

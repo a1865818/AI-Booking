@@ -1,25 +1,15 @@
+import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 
-const quotes = [
-  {
-    quote: "It books appointments while I'm doing nails. No more missed texts.",
-    name: "Amy N.",
-    type: "Nail Salon",
-  },
-  {
-    quote: "Party-size questions and deposits are handled before I even look.",
-    name: "Minh T.",
-    type: "Restaurant",
-  },
-  {
-    quote: "Walk-ins fill the chair the moment someone cancels.",
-    name: "Carlos R.",
-    type: "Barbershop",
-  },
-];
-
 export function SocialProof() {
+  const t = useTranslations("social");
+  const quotes = [
+    { quote: t("quote1"), name: t("name1"), type: t("typeNail") },
+    { quote: t("quote2"), name: t("name2"), type: t("typeRestaurant") },
+    { quote: t("quote3"), name: t("name3"), type: t("typeBarber") },
+  ];
+
   return (
     <section className="mx-auto max-w-6xl px-6 py-20">
       <div className="grid gap-6 md:grid-cols-3">

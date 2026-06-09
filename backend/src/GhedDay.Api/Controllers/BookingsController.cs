@@ -26,7 +26,7 @@ public sealed class BookingsController : ControllerBase
 
     /// <summary>Bookings for the current tenant on a given date (defaults to today, tenant-scoped).</summary>
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<BookingDto>>> GetByDate([FromQuery] DateOnly? date, CancellationToken ct)
+    public async Task<IActionResult> GetByDate([FromQuery] DateOnly? date, CancellationToken ct)
     {
         var day = date ?? DateOnly.FromDateTime(DateTime.UtcNow);
         var dayStart = new DateTimeOffset(day.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
@@ -35,7 +35,18 @@ public sealed class BookingsController : ControllerBase
         var bookings = await _db.Bookings
             .Where(b => b.StartTime >= dayStart && b.StartTime < dayEnd)
             .OrderBy(b => b.StartTime)
-            .Select(b => new BookingDto(b.Id, b.CustomerId, b.OfferingId, b.ResourceId, b.StartTime, b.EndTime, b.PartySize, b.Status, b.HoldExpiresAt))
+            .Select(b => new
+            {
+                id = b.Id,
+                customerName = b.Customer!.Name ?? b.Customer.PhoneE164,
+                offeringName = b.Offering != null ? b.Offering.Name : null,
+                resourceId = b.ResourceId,
+                resourceName = b.Resource != null ? b.Resource.Name : null,
+                startTime = b.StartTime,
+                endTime = b.EndTime,
+                partySize = b.PartySize,
+                status = b.Status.ToString(),
+            })
             .ToListAsync(ct);
 
         return Ok(bookings);
