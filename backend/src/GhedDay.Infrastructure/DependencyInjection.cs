@@ -1,0 +1,50 @@
+using GhedDay.Application.Common;
+using GhedDay.Application.Services;
+using GhedDay.Infrastructure.AI;
+using GhedDay.Infrastructure.Configuration;
+using GhedDay.Infrastructure.Data;
+using GhedDay.Infrastructure.Data.QueryFilters;
+using GhedDay.Infrastructure.Data.Repositories;
+using GhedDay.Infrastructure.Jobs;
+using GhedDay.Infrastructure.Messaging;
+using GhedDay.Infrastructure.Payments;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace GhedDay.Infrastructure;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("Postgres")
+            ?? throw new InvalidOperationException("ConnectionStrings:Postgres is not configured.");
+
+        services.AddDbContext<GhedDayDbContext>(options => options.UseNpgsql(connectionString));
+
+        services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlConnectionFactory(connectionString));
+        services.AddScoped<IQueryFilterDisabler, QueryFilterDisabler>();
+        services.AddScoped<IAvailabilityService, AvailabilityService>();
+
+        services.Configure<AnthropicOptions>(configuration.GetSection(AnthropicOptions.SectionName));
+        services.Configure<TwilioOptions>(configuration.GetSection(TwilioOptions.SectionName));
+        services.Configure<StripeOptions>(configuration.GetSection(StripeOptions.SectionName));
+
+        services.AddScoped<ISmsService, TwilioSmsService>();
+        services.AddScoped<StripeService>();
+        services.AddScoped<StripeConnectService>();
+
+        services.AddHttpClient<ClaudeHttpClient>();
+        services.AddScoped<IConversationOrchestrator, ClaudeConversationOrchestrator>();
+
+        services.AddScoped<HoldExpiryJob>();
+        services.AddScoped<ReminderJob>();
+        services.AddScoped<WaitlistOfferTimeoutJob>();
+        services.AddScoped<NoShowJob>();
+
+        return services;
+    }
+}

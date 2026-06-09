@@ -1,0 +1,52 @@
+/*
+ * Ghế Đầy design tokens — single source of truth for all CSS custom properties.
+ * Components must reference these (or their Tailwind aliases), never raw hex values
+ * (non-negotiable rule 6).
+ */
+
+:root {
+  /* Backgrounds */
+  --bg-base: #0d0d0d; /* deepest layer */
+  --bg-surface: #161616; /* cards, sidebar, containers */
+  --bg-elevated: #1e1e1e; /* hover state surfaces, inputs */
+  --bg-overlay: #242424; /* dialogs, dropdowns */
+
+  /* Borders — shadow-based depth; borders only where structure needs it */
+  --border-subtle: #1c1c1c;
+  --border-default: #2a2a2a;
+  --border-strong: #383838;
+
+  /* Text */
+  --text-primary: #f0f0f0;
+  --text-secondary: #888888;
+  --text-tertiary: #4d4d4d;
+  --text-disabled: #333333;
+
+  /* Accent — emerald; functional only, never decorative */
+  --accent: #10b981;
+  --accent-hover: #059669;
+  --accent-subtle: rgba(16, 185, 129, 0.12);
+  --accent-on: #ffffff;
+
+  /* Semantic */
+  --color-error: #f87171;
+  --color-warning: #fbbf24;
+  --color-info: #60a5fa;
+
+  /* Shadows */
+  --shadow-sm: rgba(0, 0, 0, 0.3) 0px 2px 6px;
+  --shadow-md: rgba(0, 0, 0, 0.4) 0px 4px 12px;
+  --shadow-lg: rgba(0, 0, 0, 0.5) 0px 8px 24px;
+  --shadow-inset: rgb(13, 13, 13) 0px 1px 0px, rgb(56, 56, 56) 0px 0px 0px 1px inset;
+
+  /* Radius */
+  --radius-sm: 4px; /* badges */
+  --radius-md: 6px; /* inputs */
+  --radius-lg: 8px; /* cards, dialogs */
+  --radius-xl: 12px; /* panels, video */
+  --radius-pill: 9999px; /* buttons, filters */
+
+  /* Motion */
+  --motion-micro: 150ms ease-out;
+  --motion-panel: 250ms ease-out;
+}

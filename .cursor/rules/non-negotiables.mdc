@@ -1,0 +1,41 @@
+---
+description: Ghế Đầy non-negotiable rules. Apply to every session, every PR, every file touched.
+alwaysApply: true
+---
+
+# Ghế Đầy — Non-Negotiables
+
+These apply to every session, every PR, every file touched.
+
+## 1. Trust Boundary
+- `BusinessId` and `CustomerId` **must never** appear as Claude tool parameters.
+- They are bound in C# from `ITenantContext` (decoded from JWT `sub` claim) before any tool handler runs.
+- Any code that passes tenant identifiers through tool arguments is a security defect — reject the PR.
+
+## 2. Booking State Machine
+- `pending_deposit → confirmed` happens via Stripe webhook **only**.
+- Every status transition must use a guarded `UPDATE bookings SET status = @new WHERE id = @id AND status = @expected` and assert `rowsAffected == 1`.
+- Use raw SQL + Dapper (not EF change-tracking) for `CreateBookingHold` and `ClaimWaitlistSlot` — these paths require advisory locks + guarded transitions in a single transaction.
+
+## 3. Tenant Scoping
+- Every EF Core entity query goes through global query filters keyed on `BusinessId`.
+- Every raw SQL statement must include `WHERE business_id = @businessId`.
+- Controllers never read `BusinessId` from the request body — only from `ITenantContext`.
+- Super-admin cross-tenant reads must use the explicit `IQueryFilterDisabler` wrapper.
+
+## 4. Idempotency
+- Every Twilio and Stripe webhook handler inserts a row into `processed_events(id, source)` **first** (unique constraint on PK).
+- If the insert throws a unique violation → return HTTP 200 immediately without reprocessing.
+- Never rely on delivery-once guarantees from external services.
+
+## 5. Vertical Config — Not Code
+- Adding a new business vertical must **never** require a code change.
+- Extend `vertical_config jsonb` and `IVerticalConfigService` for new behavior.
+- If a new vertical genuinely requires new booking logic not covered by the resource+offering model, open a discussion before writing code.
+
+## 6. Design Tokens
+- No hardcoded hex values in component files — always use `var(--accent)`, `var(--bg-surface)`, etc., or Tailwind token aliases.
+- No decorative gradients.
+- All motion wrapped in `@media (prefers-reduced-motion: reduce)`.
+- All interactive elements: `2px solid var(--accent)` focus ring, offset 2px.
+- All text must pass WCAG AA contrast against its background.
