@@ -85,7 +85,11 @@ public sealed class PostgresFixture : IAsyncLifetime
     {
         await using var conn = new NpgsqlConnection(ConnectionString);
         await conn.OpenAsync();
+        await conn.ExecuteAsync("DELETE FROM messages WHERE \"BusinessId\" = @businessId;", new { businessId });
         await conn.ExecuteAsync("DELETE FROM bookings WHERE \"BusinessId\" = @businessId;", new { businessId });
+        await conn.ExecuteAsync("DELETE FROM conversations WHERE \"BusinessId\" = @businessId;", new { businessId });
+        await conn.ExecuteAsync("DELETE FROM offerings WHERE \"BusinessId\" = @businessId;", new { businessId });
+        await conn.ExecuteAsync("DELETE FROM business_hours WHERE \"BusinessId\" = @businessId;", new { businessId });
         await conn.ExecuteAsync("DELETE FROM resources WHERE \"BusinessId\" = @businessId;", new { businessId });
         await conn.ExecuteAsync("DELETE FROM customers WHERE \"BusinessId\" = @businessId;", new { businessId });
         await conn.ExecuteAsync("DELETE FROM businesses WHERE \"Id\" = @businessId;", new { businessId });
