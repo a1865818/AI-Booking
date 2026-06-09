@@ -13,8 +13,14 @@ public static class DbSeeder
 {
     private static readonly Guid NailSalonId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid RestaurantId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+    private static readonly Guid NailOwnerId = Guid.Parse("a1111111-1111-1111-1111-111111111111");
+    private static readonly Guid RestaurantOwnerId = Guid.Parse("a2222222-2222-2222-2222-222222222222");
 
-    public static async Task SeedAsync(GhedDayDbContext db, CancellationToken ct = default)
+    /// <summary>Dev login password for the seeded owner accounts.</summary>
+    public const string DevPassword = "Password123!";
+
+    /// <param name="hashPassword">Hashes a plaintext password (provided by the API's IPasswordHasher).</param>
+    public static async Task SeedAsync(GhedDayDbContext db, Func<string, string> hashPassword, CancellationToken ct = default)
     {
         // Seeding touches multiple tenants; bypass the global filter for the existence check.
         db.IgnoreTenantFilter = true;
@@ -25,12 +31,33 @@ public static class DbSeeder
 
             SeedNailSalon(db);
             SeedRestaurant(db);
+            SeedOwners(db, hashPassword);
             await db.SaveChangesAsync(ct);
         }
         finally
         {
             db.IgnoreTenantFilter = false;
         }
+    }
+
+    private static void SeedOwners(GhedDayDbContext db, Func<string, string> hashPassword)
+    {
+        db.Users.Add(new User
+        {
+            Id = NailOwnerId,
+            Email = "owner@lotus-nails.test",
+            PasswordHash = hashPassword(DevPassword),
+            BusinessId = NailSalonId,
+            Role = UserRole.Owner,
+        });
+        db.Users.Add(new User
+        {
+            Id = RestaurantOwnerId,
+            Email = "owner@pho-sai-gon.test",
+            PasswordHash = hashPassword(DevPassword),
+            BusinessId = RestaurantId,
+            Role = UserRole.Owner,
+        });
     }
 
     private static void SeedNailSalon(GhedDayDbContext db)

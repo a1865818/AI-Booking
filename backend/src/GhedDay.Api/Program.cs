@@ -1,6 +1,9 @@
 using System.Text;
+using GhedDay.Api.Auth;
 using GhedDay.Api.Hubs;
 using GhedDay.Api.Middleware;
+using GhedDay.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 using GhedDay.Application;
 using GhedDay.Application.Common;
 using GhedDay.Application.Services;
@@ -31,6 +34,10 @@ builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
 
 // ---------- Auth: JWT bearer ----------
+builder.Services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
 var jwtKey = configuration["Jwt:Key"] ?? "dev-only-insecure-signing-key-change-me-please-32+chars";
 var jwtIssuer = configuration["Jwt:Issuer"] ?? "ghedday";
 var jwtAudience = configuration["Jwt:Audience"] ?? "ghedday";
@@ -129,8 +136,9 @@ if (app.Environment.IsDevelopment() && !string.IsNullOrWhiteSpace(connectionStri
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<GhedDayDbContext>();
+    var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
     await db.Database.MigrateAsync();
-    await DbSeeder.SeedAsync(db);
+    await DbSeeder.SeedAsync(db, pw => passwordHasher.HashPassword(new User(), pw));
 }
 
 app.Run();
