@@ -1,3 +1,4 @@
+using GhedDay.Application.Bookings;
 using GhedDay.Application.Common;
 using GhedDay.Application.Services;
 using GhedDay.Infrastructure.AI;
@@ -28,6 +29,7 @@ public static class DependencyInjection
         services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlConnectionFactory(connectionString));
         services.AddScoped<IQueryFilterDisabler, QueryFilterDisabler>();
         services.AddScoped<IAvailabilityService, AvailabilityService>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
 
         services.Configure<AnthropicOptions>(configuration.GetSection(AnthropicOptions.SectionName));
         services.Configure<TwilioOptions>(configuration.GetSection(TwilioOptions.SectionName));
