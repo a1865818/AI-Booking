@@ -51,6 +51,7 @@ public static class DependencyInjection
         services.AddScoped<IConversationContextStore, ConversationContextStore>();
         services.AddScoped<IConversationOrchestrator, ClaudeConversationOrchestrator>();
 
+        services.AddScoped<ProcessedEventCleanupJob>();
         services.AddScoped<HoldExpiryJob>();
         services.AddScoped<ReminderJob>();
         services.AddScoped<WaitlistOfferTimeoutJob>();
