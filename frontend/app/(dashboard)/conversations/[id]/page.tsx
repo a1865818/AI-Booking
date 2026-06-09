@@ -1,29 +1,45 @@
+"use client";
+
+import { use } from "react";
+import { useApiData } from "@/hooks/useApiData";
 import { ConversationList, type ConversationSummary } from "@/components/dashboard/ConversationList";
 import { ConversationDetail } from "@/components/dashboard/ConversationDetail";
+import { LoadingState, ErrorState } from "@/components/ui/States";
 import type { Message } from "@/hooks/useConversation";
 
-const conversations: ConversationSummary[] = [
-  { id: "1", customerName: "Amy N.", preview: "Can I move to 4pm?", unread: true, escalated: false },
-  { id: "2", customerName: "Minh T.", preview: "Table for 6 tonight", unread: false, escalated: true },
-];
+type ApiConversation = { id: string; customerName: string; preview: string | null; escalated: boolean };
+type ApiDetail = {
+  conversation: { id: string; customerName: string; aiEnabled: boolean };
+  messages: Message[];
+};
 
-const messages: Message[] = [
-  { id: "m1", conversationId: "1", direction: "Inbound", body: "Hi, can I book a gel manicure tomorrow?", createdAt: "" },
-  { id: "m2", conversationId: "1", direction: "Outbound", body: "Of course! We have 2:30 PM or 4:00 PM open. Which works?", createdAt: "" },
-];
-
-export default async function ConversationDetailPage({
+export default function ConversationDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const active = conversations.find((c) => c.id === id) ?? conversations[0];
+  const { id } = use(params);
+  const list = useApiData<ApiConversation[]>("/api/conversations");
+  const detail = useApiData<ApiDetail>(`/api/conversations/${id}`);
+
+  if (detail.loading) return <LoadingState label="Loading conversation" />;
+  if (detail.error) return <ErrorState message={detail.error} onRetry={detail.reload} />;
+
+  const conversations: ConversationSummary[] = (list.data ?? []).map((c) => ({
+    id: c.id,
+    customerName: c.customerName,
+    preview: c.preview ?? "",
+    unread: false,
+    escalated: c.escalated,
+  }));
 
   return (
     <div className="flex h-[calc(100vh-4rem)] -m-8">
       <ConversationList conversations={conversations} activeId={id} />
-      <ConversationDetail customerName={active.customerName} messages={messages} />
+      <ConversationDetail
+        customerName={detail.data?.conversation.customerName ?? ""}
+        messages={detail.data?.messages ?? []}
+      />
     </div>
   );
 }

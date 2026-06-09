@@ -12,3 +12,19 @@ export function getAccessToken(): string | null {
 export function setAccessToken(token: string | null): void {
   accessToken = token;
 }
+
+/**
+ * Exchanges the httpOnly refresh cookie for a fresh access token via the Next.js BFF route.
+ * Returns true when an access token was obtained.
+ */
+export async function refreshAccessToken(): Promise<boolean> {
+  try {
+    const res = await fetch("/api/auth/refresh", { method: "POST" });
+    if (!res.ok) return false;
+    const { accessToken: token } = (await res.json()) as { accessToken: string };
+    setAccessToken(token);
+    return true;
+  } catch {
+    return false;
+  }
+}
