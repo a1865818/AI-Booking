@@ -1,15 +1,16 @@
-const steps = [
-  { n: 1, title: "Send a text", body: "Your customer texts your number like they text a friend." },
-  { n: 2, title: "AI books + takes deposit", body: "Ghế Đầy confirms the slot and collects a deposit when needed." },
-  { n: 3, title: "You focus on guests", body: "Every booking lands on your dashboard in real time." },
-];
+import { useTranslations } from "next-intl";
 
 export function HowItWorks() {
+  const t = useTranslations("how");
+  const steps = [
+    { n: 1, title: t("step1Title"), body: t("step1Body") },
+    { n: 2, title: t("step2Title"), body: t("step2Body") },
+    { n: 3, title: t("step3Title"), body: t("step3Body") },
+  ];
+
   return (
     <section id="how" className="mx-auto max-w-6xl px-6 py-24">
-      <h2 className="text-center text-3xl font-semibold text-primary">
-        How it works
-      </h2>
+      <h2 className="text-center text-3xl font-semibold text-primary">{t("heading")}</h2>
       <ol className="mt-12 grid gap-8 md:grid-cols-3">
         {steps.map((s) => (
           <li key={s.n} className="flex flex-col items-center text-center">

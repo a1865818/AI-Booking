@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Hero } from "@/components/marketing/Hero";
 import { SocialProof } from "@/components/marketing/SocialProof";
 import { VerticalShowcase } from "@/components/marketing/VerticalShowcase";
@@ -7,32 +8,34 @@ import { Pricing } from "@/components/marketing/Pricing";
 import { Faq } from "@/components/marketing/Faq";
 
 export default function HomePage() {
+  const t = useTranslations("features");
+
   return (
     <>
       <Hero />
       <SocialProof />
       <VerticalShowcase />
       <FeatureSection
-        eyebrow="Bilingual"
-        title="Speaks Vietnamese"
-        body="Your customers text the way they speak. Ghế Đầy replies in their language and books without a hitch."
+        eyebrow={t("bilingualEyebrow")}
+        title={t("bilingualTitle")}
+        body={t("bilingualBody")}
       />
       <FeatureSection
         reversed
-        eyebrow="Live"
-        title="See every booking, live"
-        body="New bookings slide onto your dashboard the instant they happen — no refresh, no app to babysit."
+        eyebrow={t("liveEyebrow")}
+        title={t("liveTitle")}
+        body={t("liveBody")}
       />
       <FeatureSection
-        eyebrow="Deposits"
-        title="Deposits end no-shows"
-        body="Send a Stripe payment link over SMS for the bookings that need it, and watch no-shows disappear."
+        eyebrow={t("depositEyebrow")}
+        title={t("depositTitle")}
+        body={t("depositBody")}
       />
       <FeatureSection
         reversed
-        eyebrow="Waitlist"
-        title="Waitlist fills every gap"
-        body="When a slot opens, the next customer in line is offered it automatically over SMS."
+        eyebrow={t("waitlistEyebrow")}
+        title={t("waitlistTitle")}
+        body={t("waitlistBody")}
       />
       <HowItWorks />
       <Pricing />

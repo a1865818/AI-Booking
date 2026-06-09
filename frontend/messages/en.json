@@ -1,0 +1,96 @@
+{
+  "nav": {
+    "features": "Features",
+    "howItWorks": "How it works",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "getStarted": "Get started free",
+    "signIn": "Sign in"
+  },
+  "hero": {
+    "headlineLine1": "Your AI receptionist.",
+    "headlineLine2": "Books every seat.",
+    "subtitle": "Ghế Đầy answers your customers over SMS in English and Vietnamese, books the slot, takes the deposit, and fills your waitlist — for nail salons, restaurants, barbershops, spas and beyond.",
+    "ctaPrimary": "Get started free",
+    "ctaSecondary": "Watch the demo",
+    "videoCaption": "SMS → booking → dashboard demo"
+  },
+  "social": {
+    "quote1": "It books appointments while I'm doing nails. No more missed texts.",
+    "name1": "Amy N.",
+    "quote2": "Party-size questions and deposits are handled before I even look.",
+    "name2": "Minh T.",
+    "quote3": "Walk-ins fill the chair the moment someone cancels.",
+    "name3": "Carlos R.",
+    "typeNail": "Nail Salon",
+    "typeRestaurant": "Restaurant",
+    "typeBarber": "Barbershop"
+  },
+  "showcase": {
+    "heading": "One assistant. Every seat-based business.",
+    "nailLabel": "Nail Salon",
+    "nailHeadline": "Books services in Vietnamese and English",
+    "nailBody": "Customers text the way they speak. Ghế Đầy understands the service, offers open chairs, and takes a deposit to lock it in.",
+    "restaurantLabel": "Restaurant",
+    "restaurantHeadline": "Asks party size, then seats the right table",
+    "restaurantBody": "“Table for 4 at 7?” is all it takes. Larger parties are sent a deposit link automatically; everyone else gets an instant confirmation.",
+    "barberLabel": "Barbershop",
+    "barberHeadline": "Keeps every chair full all day",
+    "barberBody": "Walk-ins join a waitlist over SMS and get offered the next open slot the moment a chair frees up.",
+    "demoSuffix": "demo"
+  },
+  "features": {
+    "bilingualEyebrow": "Bilingual",
+    "bilingualTitle": "Speaks Vietnamese",
+    "bilingualBody": "Your customers text the way they speak. Ghế Đầy replies in their language and books without a hitch.",
+    "liveEyebrow": "Live",
+    "liveTitle": "See every booking, live",
+    "liveBody": "New bookings slide onto your dashboard the instant they happen — no refresh, no app to babysit.",
+    "depositEyebrow": "Deposits",
+    "depositTitle": "Deposits end no-shows",
+    "depositBody": "Send a Stripe payment link over SMS for the bookings that need it, and watch no-shows disappear.",
+    "waitlistEyebrow": "Waitlist",
+    "waitlistTitle": "Waitlist fills every gap",
+    "waitlistBody": "When a slot opens, the next customer in line is offered it automatically over SMS."
+  },
+  "how": {
+    "heading": "How it works",
+    "step1Title": "Send a text",
+    "step1Body": "Your customer texts your number like they text a friend.",
+    "step2Title": "AI books + takes deposit",
+    "step2Body": "Ghế Đầy confirms the slot and collects a deposit when needed.",
+    "step3Title": "You focus on guests",
+    "step3Body": "Every booking lands on your dashboard in real time."
+  },
+  "pricing": {
+    "heading": "Simple pricing, per location",
+    "mostPopular": "Most popular",
+    "getStarted": "Get started free",
+    "perLocation": "/ location / mo",
+    "starterName": "Starter",
+    "starterPrice": "$49",
+    "starterFeatures": ["1 location", "Unlimited SMS bookings", "Deposits via Stripe", "Waitlist auto-fill", "EN + VI"],
+    "growthName": "Growth",
+    "growthPrice": "$129",
+    "growthFeatures": ["Multi-location dashboard", "Everything in Starter", "Priority SMS throughput", "Custom AI persona", "Reminders + no-show recovery"]
+  },
+  "faq": {
+    "heading": "Frequently asked questions",
+    "items": [
+      { "q": "Does it really speak Vietnamese?", "a": "Yes. Ghế Đầy replies in the language your customer texts in — English or Vietnamese — automatically." },
+      { "q": "What kinds of businesses does it work for?", "a": "Any seat-based service: nail salons, restaurants, barbershops, spas, and more. Behaviour is configured per business, not hardcoded." },
+      { "q": "How are deposits handled?", "a": "Through Stripe. You onboard once with Stripe Connect Express; customers pay via a hosted link sent over SMS." },
+      { "q": "What happens on a no-show?", "a": "Bookings are auto-marked and your waitlist is offered the freed slot over SMS." },
+      { "q": "Do I need a new phone number?", "a": "We provision a dedicated number per location so your existing line is untouched." },
+      { "q": "Can I take over a conversation?", "a": "Anytime. Pause the AI on any conversation and reply manually from the dashboard." },
+      { "q": "Is there a contract?", "a": "No. Monthly, per location, cancel anytime." },
+      { "q": "How fast can I go live?", "a": "Once your offerings and hours are in and Stripe is connected, the first SMS books correctly immediately." }
+    ]
+  },
+  "footer": {
+    "tagline": "Your AI receptionist. Books every seat, in every language.",
+    "product": "Product",
+    "language": "Language",
+    "rights": "All rights reserved."
+  }
+}

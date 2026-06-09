@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { Button } from "@/components/ui/Button";
 
-const links = [
-  { href: "#features", label: "Features" },
-  { href: "#how", label: "How it works" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "#faq", label: "FAQ" },
-];
-
 export function NavBar() {
+  const t = useTranslations("nav");
+  const links = [
+    { href: "#features", label: t("features") },
+    { href: "#how", label: t("howItWorks") },
+    { href: "/pricing", label: t("pricing") },
+    { href: "#faq", label: t("faq") },
+  ];
+
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border-subtle bg-base/80 backdrop-blur-md">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
@@ -38,7 +40,9 @@ export function NavBar() {
 
         <div className="flex items-center gap-3">
           <LanguageToggle />
-          <Button>Get started free</Button>
+          <Link href="/login">
+            <Button>{t("getStarted")}</Button>
+          </Link>
         </div>
       </nav>
     </header>

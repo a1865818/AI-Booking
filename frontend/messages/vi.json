@@ -1,0 +1,96 @@
+{
+  "nav": {
+    "features": "Tính năng",
+    "howItWorks": "Cách hoạt động",
+    "pricing": "Bảng giá",
+    "faq": "Câu hỏi",
+    "getStarted": "Bắt đầu miễn phí",
+    "signIn": "Đăng nhập"
+  },
+  "hero": {
+    "headlineLine1": "Lễ tân AI của bạn.",
+    "headlineLine2": "Lấp đầy mọi chỗ ngồi.",
+    "subtitle": "Ghế Đầy trả lời khách qua SMS bằng tiếng Anh và tiếng Việt, đặt chỗ, nhận tiền cọc và lấp đầy danh sách chờ — cho tiệm nail, nhà hàng, tiệm cắt tóc, spa và hơn thế nữa.",
+    "ctaPrimary": "Bắt đầu miễn phí",
+    "ctaSecondary": "Xem demo",
+    "videoCaption": "SMS → đặt chỗ → bảng điều khiển"
+  },
+  "social": {
+    "quote1": "Nó đặt lịch hẹn trong khi tôi đang làm móng. Không còn bỏ lỡ tin nhắn.",
+    "name1": "Amy N.",
+    "quote2": "Hỏi số khách và thu cọc đều được xử lý trước khi tôi kịp xem.",
+    "name2": "Minh T.",
+    "quote3": "Khách vãng lai lấp đầy ghế ngay khi có người hủy.",
+    "name3": "Carlos R.",
+    "typeNail": "Tiệm Nail",
+    "typeRestaurant": "Nhà hàng",
+    "typeBarber": "Tiệm cắt tóc"
+  },
+  "showcase": {
+    "heading": "Một trợ lý. Mọi cơ sở kinh doanh theo chỗ ngồi.",
+    "nailLabel": "Tiệm Nail",
+    "nailHeadline": "Đặt dịch vụ bằng tiếng Việt và tiếng Anh",
+    "nailBody": "Khách nhắn theo cách họ nói. Ghế Đầy hiểu dịch vụ, đề xuất ghế trống và thu cọc để giữ chỗ.",
+    "restaurantLabel": "Nhà hàng",
+    "restaurantHeadline": "Hỏi số khách rồi xếp đúng bàn",
+    "restaurantBody": "Chỉ cần “Bàn cho 4 người lúc 7 giờ?”. Nhóm đông tự động nhận liên kết đặt cọc; còn lại được xác nhận ngay.",
+    "barberLabel": "Tiệm cắt tóc",
+    "barberHeadline": "Giữ mọi ghế luôn kín khách cả ngày",
+    "barberBody": "Khách vãng lai vào danh sách chờ qua SMS và được mời chỗ trống kế tiếp ngay khi có ghế.",
+    "demoSuffix": "demo"
+  },
+  "features": {
+    "bilingualEyebrow": "Song ngữ",
+    "bilingualTitle": "Nói được tiếng Việt",
+    "bilingualBody": "Khách của bạn nhắn theo cách họ nói. Ghế Đầy trả lời bằng ngôn ngữ của họ và đặt chỗ trơn tru.",
+    "liveEyebrow": "Trực tiếp",
+    "liveTitle": "Xem mọi lượt đặt theo thời gian thực",
+    "liveBody": "Lượt đặt mới hiện lên bảng điều khiển ngay lập tức — không cần tải lại, không cần canh ứng dụng.",
+    "depositEyebrow": "Tiền cọc",
+    "depositTitle": "Tiền cọc chấm dứt vắng mặt",
+    "depositBody": "Gửi liên kết thanh toán Stripe qua SMS cho những lượt cần cọc, và khách vắng mặt sẽ biến mất.",
+    "waitlistEyebrow": "Danh sách chờ",
+    "waitlistTitle": "Danh sách chờ lấp đầy mọi khoảng trống",
+    "waitlistBody": "Khi có chỗ trống, khách kế tiếp trong hàng sẽ tự động được mời qua SMS."
+  },
+  "how": {
+    "heading": "Cách hoạt động",
+    "step1Title": "Gửi tin nhắn",
+    "step1Body": "Khách nhắn tới số của bạn như nhắn cho một người bạn.",
+    "step2Title": "AI đặt chỗ + thu cọc",
+    "step2Body": "Ghế Đầy xác nhận chỗ và thu tiền cọc khi cần.",
+    "step3Title": "Bạn tập trung vào khách",
+    "step3Body": "Mọi lượt đặt hiện trên bảng điều khiển theo thời gian thực."
+  },
+  "pricing": {
+    "heading": "Giá đơn giản, theo từng cơ sở",
+    "mostPopular": "Phổ biến nhất",
+    "getStarted": "Bắt đầu miễn phí",
+    "perLocation": "/ cơ sở / tháng",
+    "starterName": "Khởi đầu",
+    "starterPrice": "$49",
+    "starterFeatures": ["1 cơ sở", "Đặt chỗ qua SMS không giới hạn", "Thu cọc qua Stripe", "Tự động lấp danh sách chờ", "Tiếng Anh + Tiếng Việt"],
+    "growthName": "Phát triển",
+    "growthPrice": "$129",
+    "growthFeatures": ["Bảng điều khiển đa cơ sở", "Mọi thứ trong gói Khởi đầu", "Ưu tiên thông lượng SMS", "Tùy chỉnh tính cách AI", "Nhắc lịch + thu hồi khách vắng"]
+  },
+  "faq": {
+    "heading": "Câu hỏi thường gặp",
+    "items": [
+      { "q": "Nó có thực sự nói được tiếng Việt không?", "a": "Có. Ghế Đầy tự động trả lời bằng ngôn ngữ khách nhắn — tiếng Anh hoặc tiếng Việt." },
+      { "q": "Nó phù hợp với loại hình kinh doanh nào?", "a": "Mọi dịch vụ theo chỗ ngồi: tiệm nail, nhà hàng, tiệm cắt tóc, spa và hơn nữa. Hành vi được cấu hình theo từng cơ sở, không viết cứng trong mã." },
+      { "q": "Tiền cọc được xử lý thế nào?", "a": "Qua Stripe. Bạn thiết lập một lần với Stripe Connect Express; khách thanh toán qua liên kết gửi bằng SMS." },
+      { "q": "Khi khách vắng mặt thì sao?", "a": "Lượt đặt được tự động đánh dấu và danh sách chờ được mời chỗ trống qua SMS." },
+      { "q": "Tôi có cần số điện thoại mới không?", "a": "Chúng tôi cấp một số riêng cho mỗi cơ sở nên đường dây hiện tại của bạn không bị ảnh hưởng." },
+      { "q": "Tôi có thể tiếp quản cuộc trò chuyện không?", "a": "Bất cứ lúc nào. Tạm dừng AI trên bất kỳ cuộc trò chuyện nào và trả lời thủ công từ bảng điều khiển." },
+      { "q": "Có hợp đồng ràng buộc không?", "a": "Không. Theo tháng, theo cơ sở, hủy bất cứ lúc nào." },
+      { "q": "Tôi có thể bắt đầu nhanh thế nào?", "a": "Sau khi nhập dịch vụ và giờ mở cửa và kết nối Stripe, tin nhắn đầu tiên đặt chỗ chính xác ngay lập tức." }
+    ]
+  },
+  "footer": {
+    "tagline": "Lễ tân AI của bạn. Lấp đầy mọi chỗ ngồi, bằng mọi ngôn ngữ.",
+    "product": "Sản phẩm",
+    "language": "Ngôn ngữ",
+    "rights": "Bảo lưu mọi quyền."
+  }
+}
