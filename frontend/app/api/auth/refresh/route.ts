@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
   if (data.refreshToken) {
     response.cookies.set("refresh_token", data.refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
     });

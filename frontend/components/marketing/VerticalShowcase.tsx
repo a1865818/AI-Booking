@@ -4,8 +4,16 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { MarketingVideo } from "@/components/marketing/MarketingVideo";
+import { muxPlaybackIds } from "@/lib/mux-config";
 
 type Key = "nail" | "restaurant" | "barber";
+
+const showcasePlaybackIds: Record<Key, string | undefined> = {
+  nail: muxPlaybackIds.nail,
+  restaurant: muxPlaybackIds.restaurant,
+  barber: muxPlaybackIds.barber,
+};
 
 export function VerticalShowcase() {
   const t = useTranslations("showcase");
@@ -56,11 +64,11 @@ export function VerticalShowcase() {
           </motion.div>
         </AnimatePresence>
 
-        <div className="aspect-[4/3] w-full rounded-xl bg-surface shadow-[var(--shadow-lg)]">
-          <div className="flex h-full items-center justify-center text-sm text-tertiary">
-            {current.label} {t("demoSuffix")}
-          </div>
-        </div>
+        <MarketingVideo
+          playbackId={showcasePlaybackIds[current.key]}
+          placeholder={`${current.label} ${t("demoSuffix")}`}
+          aspectClassName="aspect-[4/3]"
+        />
       </div>
     </section>
   );

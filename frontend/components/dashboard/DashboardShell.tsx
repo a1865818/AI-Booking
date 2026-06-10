@@ -4,7 +4,8 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { RealtimeProvider } from "@/components/shared/RealtimeProvider";
-import { refreshAccessToken } from "@/lib/auth";
+import { getAccessToken, refreshAccessToken } from "@/lib/auth";
+import { useTranslations } from "next-intl";
 
 type Status = "checking" | "ready" | "unauthenticated";
 
@@ -15,9 +16,17 @@ type Status = "checking" | "ready" | "unauthenticated";
  */
 export function DashboardShell({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const t = useTranslations("dashboard");
   const [status, setStatus] = useState<Status>("checking");
 
   useEffect(() => {
+    // If we already have an in-memory token (e.g. just logged in), no need to hit the
+    // refresh endpoint — this also prevents a double-consume in React Strict Mode dev.
+    if (getAccessToken()) {
+      setStatus("ready");
+      return;
+    }
+
     let cancelled = false;
     refreshAccessToken().then((ok) => {
       if (cancelled) return;
@@ -36,7 +45,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   if (status !== "ready") {
     return (
       <div className="flex h-screen items-center justify-center text-sm text-secondary">
-        {status === "checking" ? "Loading your dashboard…" : "Redirecting to sign in…"}
+        {status === "checking" ? t("loadingDashboard") : t("redirectLogin")}
       </div>
     );
   }

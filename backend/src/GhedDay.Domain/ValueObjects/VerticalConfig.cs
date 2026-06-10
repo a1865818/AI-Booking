@@ -39,6 +39,10 @@ public sealed record VerticalConfig
     [JsonPropertyName("deposit_per_head_cents")]
     public int? DepositPerHeadCents { get; init; }
 
+    /// <summary>Fixed deposit amount in cents when <see cref="DepositRequired"/> is true.</summary>
+    [JsonPropertyName("deposit_cents")]
+    public int? DepositCents { get; init; }
+
     /// <summary>Default booking duration when an offering does not specify one.</summary>
     [JsonPropertyName("default_duration_minutes")]
     public int? DefaultDurationMinutes { get; init; }

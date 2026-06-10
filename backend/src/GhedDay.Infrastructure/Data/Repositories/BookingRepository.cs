@@ -39,7 +39,7 @@ public sealed class BookingRepository : IBookingRepository
             ("Id", "BusinessId", "CustomerId", "OfferingId", "ResourceId",
              "StartTime", "EndTime", "PartySize", "Status", "HoldExpiresAt", "CreatedAt")
         SELECT @id, @businessId, @customerId, @offeringId, available."Id",
-               @start, @end, @partySize, @pending, @holdExpiresAt, @createdAt
+               @start, @end, @partySize, @status, @holdExpiresAt, @createdAt
         FROM available
         RETURNING "Id", "ResourceId", "HoldExpiresAt";
         """;
@@ -58,11 +58,14 @@ public sealed class BookingRepository : IBookingRepository
             new { lockKey }, tx, cancellationToken: ct));
 
         var bookingId = Guid.NewGuid();
-        var holdExpiresAt = DateTimeOffset.UtcNow.Add(request.HoldDuration);
+        var isPendingDeposit = request.InitialStatus == BookingStatus.PendingDeposit;
+        var holdExpiresAt = isPendingDeposit
+            ? DateTimeOffset.UtcNow.Add(request.HoldDuration)
+            : (DateTimeOffset?)null;
 
         try
         {
-            var row = await conn.QuerySingleOrDefaultAsync<(Guid Id, Guid ResourceId, DateTimeOffset HoldExpiresAt)?>(
+            var row = await conn.QuerySingleOrDefaultAsync<(Guid Id, Guid ResourceId, DateTimeOffset? HoldExpiresAt)?>(
                 new CommandDefinition(HoldSql, new
                 {
                     id = bookingId,
@@ -74,8 +77,9 @@ public sealed class BookingRepository : IBookingRepository
                     partySize = request.PartySize,
                     start = request.Start.UtcDateTime,
                     end = request.End.UtcDateTime,
-                    holdExpiresAt = holdExpiresAt.UtcDateTime,
+                    holdExpiresAt = holdExpiresAt?.UtcDateTime,
                     createdAt = DateTimeOffset.UtcNow.UtcDateTime,
+                    status = request.InitialStatus.ToString(),
                     pending = BookingStatus.PendingDeposit.ToString(),
                     confirmed = BookingStatus.Confirmed.ToString(),
                 }, tx, cancellationToken: ct));
@@ -87,7 +91,7 @@ public sealed class BookingRepository : IBookingRepository
             }
 
             await tx.CommitAsync(ct);
-            return BookingHoldResult.Held(row.Value.Id, row.Value.ResourceId, holdExpiresAt);
+            return BookingHoldResult.Held(row.Value.Id, row.Value.ResourceId, row.Value.HoldExpiresAt);
         }
         catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.ExclusionViolation)
         {
@@ -123,6 +127,43 @@ public sealed class BookingRepository : IBookingRepository
             }, cancellationToken: ct));
 
         return rowsAffected == 1;
+    }
+
+    public async Task SetPaymentIntentIdAsync(
+        Guid businessId,
+        Guid bookingId,
+        string paymentIntentId,
+        CancellationToken ct = default)
+    {
+        await using var conn = await _connectionFactory.OpenAsync(ct);
+
+        await conn.ExecuteAsync(new CommandDefinition(
+            """
+            UPDATE bookings
+            SET "StripePaymentIntentId" = @paymentIntentId
+            WHERE "Id" = @bookingId
+              AND "BusinessId" = @businessId;
+            """,
+            new { bookingId, businessId, paymentIntentId },
+            cancellationToken: ct));
+    }
+
+    public async Task<(Guid BusinessId, Guid BookingId)?> FindBookingByPaymentIntentAsync(
+        string paymentIntentId,
+        CancellationToken ct = default)
+    {
+        await using var conn = await _connectionFactory.OpenAsync(ct);
+
+        return await conn.QuerySingleOrDefaultAsync<(Guid BusinessId, Guid BookingId)?>(
+            new CommandDefinition(
+                """
+                SELECT "BusinessId", "Id" AS BookingId
+                FROM bookings
+                WHERE "StripePaymentIntentId" = @paymentIntentId
+                LIMIT 1;
+                """,
+                new { paymentIntentId },
+                cancellationToken: ct));
     }
 
     /// <summary>Stable 64-bit advisory-lock key derived from the business id.</summary>

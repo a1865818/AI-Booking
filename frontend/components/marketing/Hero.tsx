@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
+import { MarketingVideo } from "@/components/marketing/MarketingVideo";
+import { muxPlaybackIds } from "@/lib/mux-config";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -59,12 +61,10 @@ export function Hero() {
         custom={0.45}
         className="w-full md:w-[45%]"
       >
-        <div className="aspect-video w-full rounded-xl bg-surface shadow-[var(--shadow-lg)]">
-          {/* Phase 6: Mux player — real SMS → booking → dashboard flow, muted + looped. */}
-          <div className="flex h-full items-center justify-center text-sm text-tertiary">
-            {t("videoCaption")}
-          </div>
-        </div>
+        <MarketingVideo
+          playbackId={muxPlaybackIds.hero}
+          placeholder={t("videoCaption")}
+        />
       </motion.div>
     </section>
   );

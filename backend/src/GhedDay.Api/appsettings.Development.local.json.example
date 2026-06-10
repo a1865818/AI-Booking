@@ -1,0 +1,13 @@
+{
+  "Stripe": {
+    "SecretKey": "sk_test_...",
+    "WebhookSecret": "whsec_..."
+  },
+  "Twilio": {
+    "AccountSid": "",
+    "AuthToken": ""
+  },
+  "Anthropic": {
+    "ApiKey": ""
+  }
+}

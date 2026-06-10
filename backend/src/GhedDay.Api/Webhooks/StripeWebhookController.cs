@@ -1,4 +1,7 @@
+using GhedDay.Application.Bookings;
+using GhedDay.Application.Services;
 using GhedDay.Domain.Entities;
+using GhedDay.Domain.Enums;
 using GhedDay.Infrastructure.Configuration;
 using GhedDay.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -21,15 +24,21 @@ namespace GhedDay.Api.Webhooks;
 public sealed class StripeWebhookController : ControllerBase
 {
     private readonly GhedDayDbContext _db;
+    private readonly IBookingRepository _bookings;
+    private readonly INotificationService _notifications;
     private readonly StripeOptions _stripe;
     private readonly ILogger<StripeWebhookController> _logger;
 
     public StripeWebhookController(
         GhedDayDbContext db,
+        IBookingRepository bookings,
+        INotificationService notifications,
         IOptions<StripeOptions> stripe,
         ILogger<StripeWebhookController> logger)
     {
         _db = db;
+        _bookings = bookings;
+        _notifications = notifications;
         _stripe = stripe.Value;
         _logger = logger;
     }
@@ -39,7 +48,6 @@ public sealed class StripeWebhookController : ControllerBase
     {
         var json = await new StreamReader(Request.Body).ReadToEndAsync(ct);
 
-        // 1. Signature verification before any processing.
         Event stripeEvent;
         try
         {
@@ -54,7 +62,6 @@ public sealed class StripeWebhookController : ControllerBase
             return BadRequest();
         }
 
-        // 2. Idempotency guard.
         _db.ProcessedEvents.Add(new ProcessedEvent { Id = stripeEvent.Id, Source = "stripe" });
         try
         {
@@ -66,9 +73,83 @@ public sealed class StripeWebhookController : ControllerBase
             return Ok();
         }
 
-        // 3. Phase 3: payment_intent.succeeded → confirmed; payment_intent.payment_failed → cancel.
-        _logger.LogInformation("Accepted Stripe event {EventId} of type {Type}.", stripeEvent.Id, stripeEvent.Type);
+        switch (stripeEvent.Type)
+        {
+            case "payment_intent.succeeded":
+                await HandlePaymentSucceededAsync(stripeEvent, ct);
+                break;
+            case "payment_intent.payment_failed":
+                await HandlePaymentFailedAsync(stripeEvent, ct);
+                break;
+            default:
+                _logger.LogInformation(
+                    "Accepted Stripe event {EventId} of type {Type}.",
+                    stripeEvent.Id,
+                    stripeEvent.Type);
+                break;
+        }
 
         return Ok();
+    }
+
+    private async Task HandlePaymentSucceededAsync(Event stripeEvent, CancellationToken ct)
+    {
+        if (stripeEvent.Data.Object is not PaymentIntent intent)
+            return;
+
+        var bookingRef = await ResolveBookingRefAsync(intent.Metadata, intent.Id, ct);
+        if (bookingRef is null)
+        {
+            _logger.LogWarning("payment_intent.succeeded {IntentId} has no booking metadata.", intent.Id);
+            return;
+        }
+
+        var (businessId, bookingId) = bookingRef.Value;
+        var transitioned = await _bookings.TryTransitionStatusAsync(
+            businessId, bookingId, BookingStatus.PendingDeposit, BookingStatus.Confirmed, ct);
+
+        if (transitioned)
+        {
+            await _notifications.BookingStatusChangedAsync(
+                businessId, bookingId, BookingStatus.Confirmed.ToString(), ct);
+            _logger.LogInformation("Booking {BookingId} confirmed via Stripe payment {IntentId}.", bookingId, intent.Id);
+        }
+    }
+
+    private async Task HandlePaymentFailedAsync(Event stripeEvent, CancellationToken ct)
+    {
+        if (stripeEvent.Data.Object is not PaymentIntent intent)
+            return;
+
+        var bookingRef = await ResolveBookingRefAsync(intent.Metadata, intent.Id, ct);
+        if (bookingRef is null)
+            return;
+
+        var (businessId, bookingId) = bookingRef.Value;
+        var transitioned = await _bookings.TryTransitionStatusAsync(
+            businessId, bookingId, BookingStatus.PendingDeposit, BookingStatus.Cancelled, ct);
+
+        if (transitioned)
+        {
+            await _notifications.BookingStatusChangedAsync(
+                businessId, bookingId, BookingStatus.Cancelled.ToString(), ct);
+            _logger.LogInformation("Booking {BookingId} cancelled after failed Stripe payment {IntentId}.", bookingId, intent.Id);
+        }
+    }
+
+    private async Task<(Guid BusinessId, Guid BookingId)?> ResolveBookingRefAsync(
+        IDictionary<string, string> metadata,
+        string paymentIntentId,
+        CancellationToken ct)
+    {
+        if (metadata.TryGetValue("booking_id", out var bookingRaw)
+            && metadata.TryGetValue("business_id", out var businessRaw)
+            && Guid.TryParse(bookingRaw, out var bookingId)
+            && Guid.TryParse(businessRaw, out var businessId))
+        {
+            return (businessId, bookingId);
+        }
+
+        return await _bookings.FindBookingByPaymentIntentAsync(paymentIntentId, ct);
     }
 }

@@ -1,5 +1,7 @@
 namespace GhedDay.Application.Bookings;
 
+using GhedDay.Domain.Enums;
+
 /// <summary>
 /// Inputs for a concurrency-safe booking hold. Tenant identifiers are bound server-side from
 /// <c>ITenantContext</c> before this is constructed — never from Claude tool args
@@ -25,6 +27,12 @@ public sealed record CreateBookingHoldRequest
     public int? PartySize { get; init; }
 
     public required TimeSpan HoldDuration { get; init; }
+
+    /// <summary>
+    /// <see cref="BookingStatus.PendingDeposit"/> for deposit holds; <see cref="BookingStatus.Confirmed"/>
+    /// when no deposit is required (restaurant small parties). Confirmed bookings skip hold expiry.
+    /// </summary>
+    public BookingStatus InitialStatus { get; init; } = BookingStatus.PendingDeposit;
 }
 
 /// <summary>Outcome of a hold attempt. <see cref="Success"/> is false when no resource was free.</summary>
@@ -36,7 +44,7 @@ public sealed record BookingHoldResult
     public DateTimeOffset? HoldExpiresAt { get; init; }
     public string? FailureReason { get; init; }
 
-    public static BookingHoldResult Held(Guid bookingId, Guid resourceId, DateTimeOffset holdExpiresAt) =>
+    public static BookingHoldResult Held(Guid bookingId, Guid resourceId, DateTimeOffset? holdExpiresAt) =>
         new()
         {
             Success = true,

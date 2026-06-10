@@ -5,7 +5,9 @@ import { useApiData } from "@/hooks/useApiData";
 import { ConversationList, type ConversationSummary } from "@/components/dashboard/ConversationList";
 import { ConversationDetail } from "@/components/dashboard/ConversationDetail";
 import { LoadingState, ErrorState } from "@/components/ui/States";
-import type { Message } from "@/hooks/useConversation";
+import { useConversation, type Message } from "@/hooks/useConversation";
+
+const EMPTY_MESSAGES: Message[] = [];
 
 type ApiConversation = { id: string; customerName: string; preview: string | null; escalated: boolean };
 type ApiDetail = {
@@ -21,6 +23,7 @@ export default function ConversationDetailPage({
   const { id } = use(params);
   const list = useApiData<ApiConversation[]>("/api/conversations");
   const detail = useApiData<ApiDetail>(`/api/conversations/${id}`);
+  const { messages, appendMessage } = useConversation(id, detail.data?.messages ?? EMPTY_MESSAGES);
 
   if (detail.loading) return <LoadingState label="Loading conversation" />;
   if (detail.error) return <ErrorState message={detail.error} onRetry={detail.reload} />;
@@ -37,8 +40,11 @@ export default function ConversationDetailPage({
     <div className="flex h-[calc(100vh-4rem)] -m-8">
       <ConversationList conversations={conversations} activeId={id} />
       <ConversationDetail
+        conversationId={id}
         customerName={detail.data?.conversation.customerName ?? ""}
-        messages={detail.data?.messages ?? []}
+        aiEnabled={detail.data?.conversation.aiEnabled ?? true}
+        messages={messages}
+        onMessageSent={appendMessage}
       />
     </div>
   );

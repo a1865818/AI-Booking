@@ -4,10 +4,11 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
-import type { HubConnection } from "@microsoft/signalr";
+import { HubConnectionState, type HubConnection } from "@microsoft/signalr";
 import { createBookingConnection } from "@/lib/signalr";
 import { getAccessToken } from "@/lib/auth";
 
@@ -26,26 +27,44 @@ const RealtimeContext = createContext<RealtimeContextValue>({
  * already scoped server-side to the owner's `business_{id}` group (PLAN §2.7).
  */
 export function RealtimeProvider({ children }: { children: ReactNode }) {
-  // SignalR uses dynamic require under the hood, so only build the connection on the client —
-  // never during SSR/prerender (the initializer runs once, no network until start()).
-  const [connection] = useState<HubConnection | null>(() =>
-    typeof window === "undefined" ? null : createBookingConnection(getAccessToken),
-  );
+  const [connection, setConnection] = useState<HubConnection | null>(null);
   const [connected, setConnected] = useState(false);
+  // Track the active connection so the cleanup can stop the right instance.
+  const connRef = useRef<HubConnection | null>(null);
 
   useEffect(() => {
-    if (!connection) return;
-    let cancelled = false;
-    connection
-      .start()
-      .then(() => !cancelled && setConnected(true))
-      .catch(() => !cancelled && setConnected(false));
+    if (typeof window === "undefined") return;
+
+    let disposed = false;
+
+    // Fresh connection per effect run — a stopped HubConnection cannot be restarted.
+    const conn = createBookingConnection(getAccessToken);
+    connRef.current = conn;
+    setConnection(conn);
+
+    void (async () => {
+      try {
+        await conn.start();
+        if (disposed) {
+          await conn.stop();
+          return;
+        }
+        setConnected(true);
+      } catch {
+        if (!disposed && connRef.current === conn) setConnected(false);
+      }
+    })();
 
     return () => {
-      cancelled = true;
-      void connection.stop();
+      disposed = true;
+      connRef.current = null;
+      // stop() during negotiation logs "connection was stopped during negotiation" in dev
+      // when React Strict Mode unmounts before the handshake finishes.
+      if (conn.state !== HubConnectionState.Connecting) {
+        void conn.stop();
+      }
     };
-  }, [connection]);
+  }, []);
 
   return (
     <RealtimeContext.Provider value={{ connection, connected }}>

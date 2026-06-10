@@ -18,6 +18,14 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddJsonFile(
+        "appsettings.Development.local.json",
+        optional: true,
+        reloadOnChange: true);
+}
+
 var configuration = builder.Configuration;
 var corsOrigin = configuration["Cors:AllowedOrigin"] ?? "http://localhost:3000";
 
@@ -107,7 +115,11 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // ---------- Pipeline ----------
+app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+if (!app.Environment.IsDevelopment())
+    app.UseHsts();
 
 if (app.Environment.IsDevelopment())
 {
@@ -129,6 +141,14 @@ if (!string.IsNullOrWhiteSpace(connectionString))
     app.UseHangfireDashboard("/hangfire");
     RecurringJob.AddOrUpdate<ProcessedEventCleanupJob>(
         "processed-events-cleanup", job => job.RunAsync(CancellationToken.None), Cron.Daily);
+    RecurringJob.AddOrUpdate<HoldExpiryJob>(
+        "hold-expiry", job => job.RunAsync(CancellationToken.None), Cron.Minutely);
+    RecurringJob.AddOrUpdate<ReminderJob>(
+        "booking-reminders", job => job.RunAsync(CancellationToken.None), "*/15 * * * *");
+    RecurringJob.AddOrUpdate<WaitlistOfferTimeoutJob>(
+        "waitlist-offer-timeout", job => job.RunAsync(CancellationToken.None), Cron.Minutely);
+    RecurringJob.AddOrUpdate<NoShowJob>(
+        "no-show", job => job.RunAsync(CancellationToken.None), "*/15 * * * *");
 }
 
 // ---------- Dev: migrate + seed ----------

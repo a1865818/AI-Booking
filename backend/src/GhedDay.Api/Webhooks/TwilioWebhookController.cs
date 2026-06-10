@@ -2,6 +2,7 @@ using GhedDay.Api.Middleware;
 using GhedDay.Application.Common;
 using GhedDay.Application.DTOs;
 using GhedDay.Application.Services;
+using GhedDay.Application.Waitlist;
 using GhedDay.Domain.Entities;
 using GhedDay.Domain.Enums;
 using GhedDay.Domain.ValueObjects;
@@ -31,12 +32,13 @@ public sealed class TwilioWebhookController : ControllerBase
         new(StringComparer.OrdinalIgnoreCase) { "STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT", "HỦY", "HUY" };
 
     private static readonly HashSet<string> OptInKeywords =
-        new(StringComparer.OrdinalIgnoreCase) { "START", "UNSTOP", "YES" };
+        new(StringComparer.OrdinalIgnoreCase) { "START", "UNSTOP" };
 
     private readonly GhedDayDbContext _db;
     private readonly IQueryFilterDisabler _filterDisabler;
     private readonly ITenantContext _tenantContext;
     private readonly IConversationOrchestrator _orchestrator;
+    private readonly IWaitlistOfferService _waitlist;
     private readonly INotificationService _notifications;
     private readonly TwilioOptions _twilio;
     private readonly ILogger<TwilioWebhookController> _logger;
@@ -46,6 +48,7 @@ public sealed class TwilioWebhookController : ControllerBase
         IQueryFilterDisabler filterDisabler,
         ITenantContext tenantContext,
         IConversationOrchestrator orchestrator,
+        IWaitlistOfferService waitlist,
         INotificationService notifications,
         IOptions<TwilioOptions> twilio,
         ILogger<TwilioWebhookController> logger)
@@ -54,6 +57,7 @@ public sealed class TwilioWebhookController : ControllerBase
         _filterDisabler = filterDisabler;
         _tenantContext = tenantContext;
         _orchestrator = orchestrator;
+        _waitlist = waitlist;
         _notifications = notifications;
         _twilio = twilio.Value;
         _logger = logger;
@@ -129,6 +133,9 @@ public sealed class TwilioWebhookController : ControllerBase
         {
             await SetOptOutAsync(customer.Id, false, ct);
         }
+
+        if (await _waitlist.TryAcceptOfferReplyAsync(business.Id, customer.Id, trimmed, ct))
+            return Ok();
 
         if (customer.OptedOut || !conversation.AiEnabled)
         {

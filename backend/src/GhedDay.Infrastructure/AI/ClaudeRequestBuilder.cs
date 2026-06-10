@@ -62,13 +62,21 @@ public sealed class ClaudeRequestBuilder
 
         sb.Append("Booking rules: call check_availability before proposing any times, and never invent availability. ");
         sb.Append("Use get_offerings if you are unsure which services exist. ");
+        sb.Append("Use get_business_hours when asked about opening times. ");
+        sb.Append("Use join_waitlist when no slots are available and the customer wants to be notified. ");
+        sb.Append("If a waitlist offer was sent, the customer can reply YES to accept — do not call create_booking_hold for that. ");
+        sb.Append("Use handle_cancellation when the customer wants to cancel an existing booking. ");
         sb.Append("Use create_booking_hold only after the customer confirms a specific time. ");
         sb.Append($"A booking reserves a {config.ResourceLabel.ToLowerInvariant()}. ");
 
         if (config.DepositThresholdPartySize is { } threshold)
             sb.Append($"Parties of {threshold} or more require a deposit; ask for the party size first. ");
-        else if (config.DepositRequired)
+        else         if (config.DepositRequired)
             sb.Append("A deposit is required to confirm; let the customer know a payment link will follow. ");
+
+        var customPersona = business.GetSettings().AiPersona;
+        if (!string.IsNullOrWhiteSpace(customPersona))
+            sb.Append(customPersona.Trim()).Append(' ');
 
         sb.Append("Never ask for or accept internal IDs from the customer. ");
         sb.Append("If you cannot help, offer to have a staff member follow up.");

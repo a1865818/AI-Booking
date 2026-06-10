@@ -25,4 +25,14 @@ public interface IBookingRepository
         BookingStatus expected,
         BookingStatus next,
         CancellationToken ct = default);
+
+    Task SetPaymentIntentIdAsync(
+        Guid businessId,
+        Guid bookingId,
+        string paymentIntentId,
+        CancellationToken ct = default);
+
+    Task<(Guid BusinessId, Guid BookingId)?> FindBookingByPaymentIntentAsync(
+        string paymentIntentId,
+        CancellationToken ct = default);
 }

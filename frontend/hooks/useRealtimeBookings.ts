@@ -1,7 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRealtime } from "@/components/shared/RealtimeProvider";
+
+type BookingCreatedPayload = {
+  booking: { id: string; resourceId?: string | null };
+};
+
+/**
+ * Subscribes to BookingHub events and triggers a data reload so lists stay in sync.
+ * Returns the resource id to pulse when a new booking lands (PLAN §3.6).
+ */
+export function useLiveBookings(reload: () => void) {
+  const { connection, connected } = useRealtime();
+  const [pulseResourceId, setPulseResourceId] = useState<string | null>(null);
+
+  const stableReload = useCallback(() => reload(), [reload]);
+
+  useEffect(() => {
+    if (!connection || !connected) return;
+
+    const onCreated = (payload: BookingCreatedPayload) => {
+      stableReload();
+      if (payload.booking.resourceId) setPulseResourceId(payload.booking.resourceId);
+    };
+
+    const onStatusChanged = () => stableReload();
+
+    connection.on("BookingCreated", onCreated);
+    connection.on("BookingStatusChanged", onStatusChanged);
+
+    return () => {
+      connection.off("BookingCreated", onCreated);
+      connection.off("BookingStatusChanged", onStatusChanged);
+    };
+  }, [connection, connected, stableReload]);
+
+  return { pulseResourceId };
+}
 
 export type Booking = {
   id: string;
@@ -12,10 +48,7 @@ export type Booking = {
   status: string;
 };
 
-/**
- * Keeps a live list of bookings, prepending new ones pushed over SignalR. The marker
- * `isNew` drives the slide-in + emerald pulse animation (PLAN §3.6).
- */
+/** @deprecated Use useLiveBookings for dashboard pages that fetch via useApiData. */
 export function useRealtimeBookings(initial: Booking[] = []) {
   const { connection } = useRealtime();
   const [bookings, setBookings] = useState<Booking[]>(initial);
@@ -26,7 +59,7 @@ export function useRealtimeBookings(initial: Booking[] = []) {
 
     const onCreated = (payload: { booking: Booking }) => {
       setBookings((prev) => [payload.booking, ...prev]);
-      setNewest(payload.booking.id);
+      setNewest(payload.booking.resourceId ?? payload.booking.id);
     };
 
     const onStatusChanged = (payload: { bookingId: string; newStatus: string }) => {

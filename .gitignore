@@ -28,6 +28,8 @@ next-env.d.ts
 .env.*.local
 *.local
 !*.example
+**/appsettings.Development.local.json
+**/appsettings.*.local.json
 
 # ---------- Logs ----------
 *.log

@@ -8,6 +8,7 @@ using GhedDay.Infrastructure.AI.Tools;
 using GhedDay.Infrastructure.Configuration;
 using GhedDay.Infrastructure.Data;
 using GhedDay.Infrastructure.Data.Repositories;
+using GhedDay.Infrastructure.Payments;
 using GhedDay.Infrastructure.Tests.Fakes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -64,7 +65,7 @@ public sealed class SmsBookingAcceptanceTests
             var booking = await QueryFirstBookingAsync(businessId)
                 ?? throw new Xunit.Sdk.XunitException("No booking created for restaurant.");
             Assert.Equal(4, booking.PartySize);
-            Assert.Equal("PendingDeposit", booking.Status);
+            Assert.Equal("Confirmed", booking.Status);
             Assert.Equal(fourTopId, booking.ResourceId); // smallest sufficient table
             Assert.Contains(sms.Sent, m => m.Body == "Booked! See you then." && m.From == "+15550001111");
         }
@@ -136,12 +137,15 @@ public sealed class SmsBookingAcceptanceTests
         var clock = new FixedTimeProvider(Now);
         var bookingRepo = new BookingRepository(_pg.ConnectionFactory);
         var notifications = new NullNotificationService();
+        var stripe = new StripeService(
+            Options.Create(new StripeOptions()),
+            NullLogger<StripeService>.Instance);
 
         var tools = new IClaudeTool[]
         {
             new GetOfferingsTool(db),
             new CheckAvailabilityTool(db, vertical, clock),
-            new CreateBookingHoldTool(db, bookingRepo, vertical, notifications),
+            new CreateBookingHoldTool(db, bookingRepo, vertical, notifications, stripe),
         };
         var handler = new ClaudeToolHandler(tools, NullLogger<ClaudeToolHandler>.Instance);
         var builder = new ClaudeRequestBuilder(vertical, Options.Create(new AnthropicOptions()), clock);

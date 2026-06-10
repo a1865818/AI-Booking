@@ -16,7 +16,9 @@ export async function POST(request: NextRequest) {
   });
 
   if (!upstream.ok) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    const detail = await upstream.text().catch(() => "");
+    console.error(`[auth/login] upstream ${upstream.status}: ${detail}`);
+    return NextResponse.json({ error: "Invalid credentials" }, { status: upstream.status });
   }
 
   const data = (await upstream.json()) as {
@@ -29,8 +31,8 @@ export async function POST(request: NextRequest) {
   if (data.refreshToken) {
     response.cookies.set("refresh_token", data.refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
     });

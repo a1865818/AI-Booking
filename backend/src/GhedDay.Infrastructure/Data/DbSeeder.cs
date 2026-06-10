@@ -26,12 +26,21 @@ public static class DbSeeder
         db.IgnoreTenantFilter = true;
         try
         {
-            if (await db.Businesses.AnyAsync(ct))
+            var hasBusinesses = await db.Businesses.AnyAsync(ct);
+            var hasUsers = await db.Users.AnyAsync(ct);
+
+            if (hasBusinesses && hasUsers)
                 return;
 
-            SeedNailSalon(db);
-            SeedRestaurant(db);
-            SeedOwners(db, hashPassword);
+            if (!hasBusinesses)
+            {
+                SeedNailSalon(db);
+                SeedRestaurant(db);
+            }
+
+            if (!hasUsers)
+                SeedOwners(db, hashPassword);
+
             await db.SaveChangesAsync(ct);
         }
         finally
@@ -76,6 +85,7 @@ public static class DbSeeder
             ResourceLabel = "Chair",
             ResourceLabelPlural = "Chairs",
             DepositRequired = true,
+            DepositCents = 2000,
             HoldMinutes = 15
         });
         db.Businesses.Add(business);

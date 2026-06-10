@@ -45,9 +45,7 @@ public sealed class VerticalConfigService : IVerticalConfigService
         if (config.DepositPerHeadCents is { } perHead && partySize is { } size)
             return perHead * size;
 
-        // Fixed deposit policies live in Business.settings; default to 0 here so callers that
-        // need a flat amount read it explicitly rather than guessing.
-        return 0;
+        return config.DepositCents ?? 0;
     }
 
     public AvailabilityParams GetAvailabilityParams(Business business, int? partySize = null)

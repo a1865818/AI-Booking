@@ -31,4 +31,7 @@ public class Business
 
     public VerticalConfig GetVerticalConfig() => VerticalConfig.FromJson(VerticalConfigJson);
     public void SetVerticalConfig(VerticalConfig config) => VerticalConfigJson = config.ToJson();
+
+    public BusinessSettings GetSettings() => BusinessSettings.FromJson(SettingsJson);
+    public void SetSettings(BusinessSettings settings) => SettingsJson = settings.ToJson();
 }

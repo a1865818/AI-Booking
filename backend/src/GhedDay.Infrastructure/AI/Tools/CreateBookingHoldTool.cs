@@ -8,12 +8,13 @@ using GhedDay.Domain.Entities;
 using GhedDay.Domain.Enums;
 using GhedDay.Infrastructure.AI.Models;
 using GhedDay.Infrastructure.Data;
+using GhedDay.Infrastructure.Payments;
 using Microsoft.EntityFrameworkCore;
 
 namespace GhedDay.Infrastructure.AI.Tools;
 
 /// <summary>
-/// Reserves a slot as a <c>pending_deposit</c> hold. The slot is re-validated server-side under
+/// Reserves a slot as a hold or immediate confirmation. The slot is re-validated server-side under
 /// an advisory lock by <see cref="IBookingRepository"/> regardless of what Claude passed in —
 /// the last line of defence against hallucinated availability (PLAN §2.5 risk).
 /// </summary>
@@ -23,17 +24,20 @@ public sealed class CreateBookingHoldTool : IClaudeTool
     private readonly IBookingRepository _bookings;
     private readonly IVerticalConfigService _verticalConfig;
     private readonly INotificationService _notifications;
+    private readonly StripeService _stripe;
 
     public CreateBookingHoldTool(
         GhedDayDbContext db,
         IBookingRepository bookings,
         IVerticalConfigService verticalConfig,
-        INotificationService notifications)
+        INotificationService notifications,
+        StripeService stripe)
     {
         _db = db;
         _bookings = bookings;
         _verticalConfig = verticalConfig;
         _notifications = notifications;
+        _stripe = stripe;
     }
 
     public string Name => "create_booking_hold";
@@ -73,6 +77,10 @@ public sealed class CreateBookingHoldTool : IClaudeTool
         var durationMinutes = await ResolveDurationAsync(offeringId, business.Id, config, ct);
         var end = start.AddMinutes(durationMinutes);
 
+        var depositRequired = _verticalConfig.RequiresDeposit(business, partySize);
+        var depositCents = _verticalConfig.GetDepositCents(business, partySize);
+        var initialStatus = depositRequired ? BookingStatus.PendingDeposit : BookingStatus.Confirmed;
+
         var result = await _bookings.CreateBookingHoldAsync(new CreateBookingHoldRequest
         {
             BusinessId = context.BusinessId,
@@ -83,17 +91,35 @@ public sealed class CreateBookingHoldTool : IClaudeTool
             RequiredCapacity = requiredCapacity,
             PartySize = partySize,
             HoldDuration = TimeSpan.FromMinutes(config.HoldMinutes),
+            InitialStatus = initialStatus,
         }, ct);
 
         if (!result.Success)
             return ToolJson.Serialize(new { success = false, reason = result.FailureReason });
 
-        var depositRequired = _verticalConfig.RequiresDeposit(business, partySize);
-        var depositCents = _verticalConfig.GetDepositCents(business, partySize);
+        string? paymentUrl = null;
+        if (depositRequired && depositCents > 0)
+        {
+            var payment = await _stripe.CreateDepositPaymentAsync(
+                business, result.BookingId!.Value, depositCents, ct);
+            if (payment is not null)
+            {
+                await _bookings.SetPaymentIntentIdAsync(
+                    context.BusinessId, result.BookingId.Value, payment.PaymentIntentId, ct);
+                paymentUrl = payment.PaymentUrl;
+            }
+        }
 
+        var status = initialStatus;
         await _notifications.BookingCreatedAsync(context.BusinessId, new BookingDto(
             result.BookingId!.Value, context.CustomerId, offeringId, result.ResourceId,
-            start, end, partySize, BookingStatus.PendingDeposit, result.HoldExpiresAt), ct);
+            start, end, partySize, status, result.HoldExpiresAt), ct);
+
+        if (status == BookingStatus.Confirmed)
+        {
+            await _notifications.BookingStatusChangedAsync(
+                context.BusinessId, result.BookingId.Value, status.ToString(), ct);
+        }
 
         return ToolJson.Serialize(new
         {
@@ -102,9 +128,10 @@ public sealed class CreateBookingHoldTool : IClaudeTool
             resource_id = result.ResourceId,
             start = start.ToString("o"),
             hold_expires_at = result.HoldExpiresAt?.ToString("o"),
-            status = "pending_deposit",
+            status = status.ToString(),
             deposit_required = depositRequired,
             deposit_cents = depositCents,
+            payment_url = paymentUrl,
         });
     }
 

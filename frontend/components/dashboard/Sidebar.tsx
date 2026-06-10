@@ -2,18 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { CalendarDays, MessagesSquare, ListChecks, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const nav = [
-  { href: "/dashboard", label: "Today", icon: CalendarDays },
-  { href: "/conversations", label: "Conversations", icon: MessagesSquare },
-  { href: "/bookings", label: "Bookings", icon: ListChecks },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
+import { LanguageToggle } from "@/components/shared/LanguageToggle";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const t = useTranslations("dashboard");
+
+  const nav = [
+    { href: "/dashboard", label: t("navToday"), icon: CalendarDays },
+    { href: "/conversations", label: t("navConversations"), icon: MessagesSquare },
+    { href: "/bookings", label: t("navBookings"), icon: ListChecks },
+    { href: "/settings", label: t("navSettings"), icon: Settings },
+  ];
 
   return (
     <aside className="flex h-screen w-60 flex-col gap-2 border-r border-border-subtle bg-surface p-4">
@@ -42,6 +45,9 @@ export function Sidebar() {
           );
         })}
       </nav>
+      <div className="mt-auto px-2 pt-4">
+        <LanguageToggle />
+      </div>
     </aside>
   );
 }

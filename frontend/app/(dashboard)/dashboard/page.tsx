@@ -4,7 +4,7 @@ import { useApiData } from "@/hooks/useApiData";
 import { ResourceGrid, type ResourceCell } from "@/components/dashboard/ResourceGrid";
 import { BookingCard } from "@/components/dashboard/BookingCard";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/States";
-import { useRealtimeBookings } from "@/hooks/useRealtimeBookings";
+import { useLiveBookings } from "@/hooks/useRealtimeBookings";
 
 type Resource = { id: string; name: string; capacity: number };
 type Settings = { resourceLabelPlural: string };
@@ -27,7 +27,7 @@ export default function TodayPage() {
   const settings = useApiData<Settings>("/api/settings");
   const resources = useApiData<Resource[]>("/api/resources");
   const bookings = useApiData<Booking[]>("/api/bookings");
-  const { newestBookingId } = useRealtimeBookings();
+  const { pulseResourceId } = useLiveBookings(bookings.reload);
 
   if (settings.loading || resources.loading || bookings.loading) {
     return <LoadingState label="Loading today" />;
@@ -64,7 +64,7 @@ export default function TodayPage() {
       <ResourceGrid
         resourceLabelPlural={settings.data?.resourceLabelPlural ?? "Resources"}
         resources={cells}
-        newestResourceId={newestBookingId}
+        newestResourceId={pulseResourceId}
       />
 
       <section>

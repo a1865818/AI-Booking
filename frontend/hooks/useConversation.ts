@@ -17,6 +17,10 @@ export function useConversation(conversationId: string, initial: Message[] = [])
   const [messages, setMessages] = useState<Message[]>(initial);
 
   useEffect(() => {
+    setMessages(initial);
+  }, [conversationId, initial]);
+
+  useEffect(() => {
     if (!connection) return;
 
     const onMessage = (payload: { conversationId: string; message: Message }) => {
@@ -29,5 +33,11 @@ export function useConversation(conversationId: string, initial: Message[] = [])
     return () => connection.off("NewConversationMessage", onMessage);
   }, [connection, conversationId]);
 
-  return { messages };
+  const appendMessage = (message: Message) => {
+    setMessages((prev) =>
+      prev.some((m) => m.id === message.id) ? prev : [...prev, message],
+    );
+  };
+
+  return { messages, appendMessage };
 }
